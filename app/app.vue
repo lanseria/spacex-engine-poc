@@ -7,7 +7,6 @@ useHead({
 </script>
 
 <template>
-  <VitePwaManifest />
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
@@ -20,9 +19,7 @@ body,
   height: 100vh;
   margin: 0;
   padding: 0;
-}
-
-html.dark {
-  color-scheme: dark;
+  /* 背景颜色 #4F5B82 */
+  background-color: #4f5b82;
 }
 </style>
