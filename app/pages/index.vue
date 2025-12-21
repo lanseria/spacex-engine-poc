@@ -1,17 +1,33 @@
 <script setup lang="ts">
-// 引擎状态颜色定义
-const COLOR_ON = 'rgba(255,255,255,0.9)'
-const COLOR_OFF = 'rgba(128,128,128,0.3)'
-
-// 引擎定义：0为中心，1-8为周围一圈
-const SURROUNDING_ANGLES = Array.from({ length: 8 }, (_, i) => 22.5 + i * 45)
+import type { EngineVariant } from '~/components/RocketEngine.vue'
 
 // ------------------- 状态数据 -------------------
 
-// 序列数据：使用 useLocalStorage 持久化存储
-// 每个元素是一个包含激活引擎ID的数组
-const sequence = useLocalStorage<number[][]>('rocket-launch-sequence', [[]])
+// 引擎类型选择
+const engineVariant = ref<EngineVariant>('sealevel')
+
+// 分别存储不同引擎的序列
+const sequenceSealevel = useLocalStorage<number[][]>('rocket-launch-sequence-sealevel', [[]])
+const sequenceVacuum = useLocalStorage<number[][]>('rocket-launch-sequence-vacuum', [[]])
+
+// 根据当前引擎类型获取对应的序列引用
+const sequence = computed({
+  get: () => engineVariant.value === 'sealevel' ? sequenceSealevel.value : sequenceVacuum.value,
+  set: (val) => {
+    if (engineVariant.value === 'sealevel')
+      sequenceSealevel.value = val
+    else
+      sequenceVacuum.value = val
+  },
+})
+
+// 当前播放进度（不同引擎类型切换时，重置进度还是保留？这里选择重置以防越界）
 const currentStepIndex = ref(0)
+
+// 监听引擎切换，重置进度
+watch(engineVariant, () => {
+  currentStepIndex.value = 0
+})
 
 // 弹窗控制
 const isConfigOpen = ref(false)
@@ -24,7 +40,6 @@ const editingStepIndex = ref(0)
 
 // 当前展示的激活引擎列表（主界面用）
 const currentActiveEngines = computed(() => {
-  // 防止越界（当本地存储的序列变短时）
   if (currentStepIndex.value >= sequence.value.length) {
     return []
   }
@@ -40,11 +55,6 @@ const editingActiveEngines = computed(() => {
 const isLastStep = computed(() => currentStepIndex.value >= sequence.value.length - 1)
 
 // ------------------- 方法逻辑 -------------------
-
-// 获取某个引擎的填充颜色
-function getEngineColor(engineId: number, activeList: number[]) {
-  return activeList.includes(engineId) ? COLOR_ON : COLOR_OFF
-}
 
 // 下一步
 function nextStep() {
@@ -116,60 +126,52 @@ function removeStep(index: number) {
 
 <template>
   <div class="text-white flex flex-col h-full w-full relative overflow-hidden">
-    <!-- 右上角：序列配置按钮 (保持绝对定位，浮动在最上层) -->
-    <div class="right-4 top-4 absolute z-20">
-      <button
-        class="btn bg-gray-700 flex gap-2 items-center hover:bg-gray-600"
-        @click="openConfig"
-      >
-        <div i-carbon-settings />
-        序列配置
-      </button>
-    </div>
+    <!-- 顶部工具栏：Tab 切换与配置按钮 -->
+    <!-- flex-none 占据空间，pt-4 提供顶部内边距 -->
+    <div class="pt-4 flex flex-none w-full items-start justify-center relative z-20">
+      <!-- Tab 切换 -->
+      <div class="p-1 rounded-lg bg-black/30 flex shadow-lg backdrop-blur-md">
+        <button
+          class="text-sm font-medium px-4 py-1.5 rounded transition-all"
+          :class="engineVariant === 'sealevel' ? 'bg-teal-600 text-white shadow' : 'text-gray-400 hover:text-gray-200'"
+          @click="engineVariant = 'sealevel'"
+        >
+          Merlin 1D 海平面
+        </button>
+        <button
+          class="text-sm font-medium px-4 py-1.5 rounded transition-all"
+          :class="engineVariant === 'vacuum' ? 'bg-teal-600 text-white shadow' : 'text-gray-400 hover:text-gray-200'"
+          @click="engineVariant = 'vacuum'"
+        >
+          Merlin 1D 真空版
+        </button>
+      </div>
 
-    <!-- 主内容区域：Flex 布局 -->
-    <!-- 上半部分：火箭引擎可视化 (自动占据剩余空间并居中) -->
-    <div class="flex flex-1 min-h-0 w-full items-center justify-center relative z-0">
-      <div class="transition-all duration-500">
-        <svg width="300" height="300" viewBox="0 0 250 250" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <radialGradient id="blurGradientMain" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-              <stop offset="0%" stop-color="#000000" stop-opacity="0.5" />
-              <stop offset="30%" stop-color="#000000" stop-opacity="0.5" />
-              <stop offset="100%" stop-color="#000000" stop-opacity="0.05" />
-            </radialGradient>
-          </defs>
-
-          <g transform="translate(125, 125)">
-            <!-- 背景圆 -->
-            <circle r="110" cx="0" cy="0" fill="url(#blurGradientMain)" />
-            <circle r="115" fill="none" stroke="rgba(128,128,128,0.3)" stroke-width="3" />
-
-            <!-- 引擎组 -->
-            <g class="transition-colors duration-300">
-              <!-- 中心引擎 (ID: 0) -->
-              <circle
-                r="21" cx="0" cy="0"
-                :fill="getEngineColor(0, currentActiveEngines)"
-                class="transition-all duration-300"
-              />
-
-              <!-- 周围8个引擎 (ID: 1-8) -->
-              <g v-for="(angle, index) in SURROUNDING_ANGLES" :key="index">
-                <circle
-                  r="21" cx="0" cy="-70"
-                  :transform="`rotate(${angle})`"
-                  :fill="getEngineColor(index + 1, currentActiveEngines)"
-                  class="transition-all duration-300"
-                />
-              </g>
-            </g>
-          </g>
-        </svg>
+      <!-- 右上角：序列配置按钮 (绝对定位在工具栏容器内) -->
+      <div class="right-4 top-4 absolute">
+        <button
+          class="btn bg-gray-700 flex gap-2 items-center hover:bg-gray-600"
+          @click="openConfig"
+        >
+          <div i-carbon-settings />
+          序列配置
+        </button>
       </div>
     </div>
 
-    <!-- 下半部分：底部控制按钮 (作为 Flex 项目存在，不再重叠) -->
+    <!-- 主内容区域：可视化 -->
+    <!-- flex-1 自动占据剩余空间 -->
+    <div class="flex flex-1 min-h-0 w-full items-center justify-center relative z-0">
+      <div class="transition-all duration-500">
+        <!-- 使用提取后的组件 -->
+        <RocketEngine
+          :variant="engineVariant"
+          :active-ids="currentActiveEngines"
+        />
+      </div>
+    </div>
+
+    <!-- 底部控制按钮 -->
     <div class="pb-12 pt-4 bg-inherit flex flex-none flex-col gap-4 w-full items-center z-10">
       <div class="text-xl font-mono opacity-80">
         Step: {{ currentStepIndex + 1 }} / {{ sequence.length }}
@@ -201,7 +203,12 @@ function removeStep(index: number) {
         <!-- 左侧：步骤列表 -->
         <div class="border-r border-gray-600 bg-[#2d364d] flex flex-col w-1/3">
           <div class="text-lg font-bold p-4 border-b border-gray-600 flex items-center justify-between">
-            <span>节点序列</span>
+            <span class="flex flex-col">
+              <span>节点序列</span>
+              <span class="text-xs text-gray-400 font-normal mt-0.5">
+                {{ engineVariant === 'sealevel' ? 'Merlin 1D' : 'Merlin Vacuum' }}
+              </span>
+            </span>
             <button class="text-sm icon-btn" title="添加节点" @click="addStep">
               <div i-carbon-add-filled class="text-xl text-teal-400" />
             </button>
@@ -235,45 +242,15 @@ function removeStep(index: number) {
           </div>
 
           <div class="bg-[#3a4563] flex flex-1 items-center justify-center">
-            <!-- 可交互的 SVG -->
-            <svg width="220" height="220" viewBox="0 0 250 250" xmlns="http://www.w3.org/2000/svg">
-              <g transform="translate(125, 125)">
-                <circle r="110" cx="0" cy="0" fill="rgba(0,0,0,0.2)" />
-                <circle r="115" fill="none" stroke="rgba(128,128,128,0.3)" stroke-width="3" />
-
-                <!-- 中心引擎 (点击切换) -->
-                <circle
-                  r="21" cx="0" cy="0"
-                  :fill="getEngineColor(0, editingActiveEngines)"
-                  class="cursor-pointer hover:stroke-2 hover:stroke-teal-400"
-                  @click="toggleEngineState(0)"
-                />
-
-                <!-- 周围引擎 (点击切换) -->
-                <g v-for="(angle, index) in SURROUNDING_ANGLES" :key="index">
-                  <circle
-                    r="21" cx="0" cy="-70"
-                    :transform="`rotate(${angle})`"
-                    :fill="getEngineColor(index + 1, editingActiveEngines)"
-                    class="cursor-pointer hover:stroke-2 hover:stroke-teal-400"
-                    @click="toggleEngineState(index + 1)"
-                  />
-                  <!-- 添加索引文字辅助辨识 -->
-                  <text
-                    y="-70"
-                    :transform="`rotate(${angle})`"
-                    text-anchor="middle"
-                    alignment-baseline="middle"
-                    fill="#333"
-                    font-size="10"
-                    class="pointer-events-none select-none"
-                  >
-                    {{ index + 1 }}
-                  </text>
-                </g>
-                <text x="0" y="0" text-anchor="middle" alignment-baseline="middle" fill="#333" font-size="10" class="pointer-events-none select-none">0</text>
-              </g>
-            </svg>
+            <!-- 可交互的 SVG 组件 -->
+            <div class="scale-90">
+              <RocketEngine
+                :variant="engineVariant"
+                :active-ids="editingActiveEngines"
+                interactive
+                @toggle="toggleEngineState"
+              />
+            </div>
           </div>
 
           <!-- 底部操作栏 -->

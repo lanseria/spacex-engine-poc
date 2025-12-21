@@ -1,7 +1,6 @@
 import { createLocalFontProcessor } from '@unocss/preset-web-fonts/local'
 import {
   defineConfig,
-  presetAttributify,
   presetIcons,
   presetTypography,
   presetWebFonts,
@@ -16,8 +15,11 @@ export default defineConfig({
     ['icon-btn', 'inline-block cursor-pointer select-none opacity-75 transition duration-200 ease-in-out hover:opacity-100 hover:text-teal-600'],
   ],
   presets: [
-    presetWind4(),
-    presetAttributify(),
+    presetWind4({
+      preflights: {
+        reset: true,
+      },
+    }),
     presetIcons({
       scale: 1.2,
     }),
