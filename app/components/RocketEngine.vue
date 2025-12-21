@@ -30,6 +30,7 @@ function getFill(id: number) {
   return props.activeIds.includes(id) ? COLOR_ON : COLOR_OFF
 }
 
+// 检查某个 ID 是否激活
 function isActive(id: number) {
   return props.activeIds.includes(id)
 }
@@ -90,35 +91,22 @@ const interactiveClass = computed(() =>
             :class="interactiveClass"
             @click="handleClick(index + 1)"
           />
-          <!-- 仅在交互模式下显示的索引辅助文本 -->
-          <text
-            v-if="interactive"
-            y="-70"
-            :transform="`rotate(${angle})`"
-            text-anchor="middle"
-            alignment-baseline="middle"
-            fill="#333"
-            font-size="32"
-            class="pointer-events-none select-none"
-          >
-            {{ index + 1 }}
-          </text>
         </g>
-        <text v-if="interactive" x="0" y="0" text-anchor="middle" alignment-baseline="middle" fill="#333" font-size="32" class="pointer-events-none select-none">0</text>
       </g>
 
       <!-- 变体 B: Merlin 1D Vacuum (单发真空版) -->
       <g v-else-if="variant === 'vacuum'" class="transition-colors duration-300">
-        <!-- 1. 渐变填充层：模拟喷口光辉 (状态激活时显示，未激活时隐藏) -->
+        <!-- ID 1: 外部喷管扩展段 (控制渐变) -->
+        <!-- 1. 渐变填充层 (状态激活时显示，未激活时隐藏) -->
         <circle
           r="80" cx="0" cy="0"
           fill="url(#vacuumGradient)"
           class="pointer-events-none transition-opacity duration-300"
-          :class="isActive(0) ? 'opacity-100' : 'opacity-0'"
+          :class="isActive(1) ? 'opacity-100' : 'opacity-0'"
         />
 
-        <!-- 2. 半径70的圈 (结构轮廓) -->
-        <!-- 添加 fill="transparent" 确保环内区域可被点击 -->
+        <!-- 2. 半径86的圈 (交互目标 & 轮廓) -->
+        <!-- 点击此区域切换 ID 1 -->
         <circle
           r="86" cx="0" cy="0"
           fill="transparent"
@@ -126,10 +114,12 @@ const interactiveClass = computed(() =>
           stroke-width="3"
           class="transition-all duration-300"
           :class="interactiveClass"
-          @click="handleClick(0)"
+          @click="handleClick(1)"
         />
 
+        <!-- ID 0: 核心 (控制中心圆) -->
         <!-- 3. 中心21半径的圆 (核心) -->
+        <!-- 注意：放在最后绘制以处于最上层，确保点击中心优先触发 ID 0 -->
         <circle
           r="21" cx="0" cy="0"
           :fill="getFill(0)"
@@ -137,8 +127,6 @@ const interactiveClass = computed(() =>
           :class="interactiveClass"
           @click="handleClick(0)"
         />
-
-        <text v-if="interactive" x="0" y="0" text-anchor="middle" alignment-baseline="middle" fill="#333" font-size="32" class="pointer-events-none select-none">0</text>
       </g>
     </g>
   </svg>
