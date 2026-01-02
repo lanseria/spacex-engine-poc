@@ -18,7 +18,7 @@ const SURROUNDING_ANGLES = Array.from({ length: 8 }, (_, i) => 22.5 + i * 45)
   <g transform="scale(2)" class="transition-colors duration-300">
     <!-- 背景基础 (原逻辑移入) -->
     <circle r="110" cx="0" cy="0" fill="url(#blurGradientMain)" />
-    <circle r="115" fill="none" stroke="rgba(128,128,128,0.3)" stroke-width="1.5" />
+    <circle r="115" fill="none" stroke="rgba(128,128,128,0.3)" stroke-width="4" />
 
     <!-- 中心引擎 (ID: 0) -->
     <circle

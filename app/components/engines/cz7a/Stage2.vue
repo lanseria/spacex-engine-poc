@@ -17,7 +17,7 @@ const { getFill, isActive, interactiveClass, handleClick } = useEngineUtils(prop
     <circle r="230" cx="0" cy="0" fill="url(#blurGradientMain)" />
 
     <!-- 箭体轮廓 -->
-    <circle r="200" fill="none" stroke="rgba(128,128,128,0.3)" stroke-width="3" />
+    <circle r="200" fill="none" stroke="rgba(128,128,128,0.3)" stroke-width="5" />
 
     <!-- 左引擎 ID: 0, 右引擎 ID: 1 -->
     <g v-for="(offset, idx) in [-100, 100]" :key="idx">
