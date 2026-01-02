@@ -1,6 +1,5 @@
 <script setup lang="ts">
-// 引擎类型定义
-export type EngineVariant = 'sealevel' | 'vacuum'
+import type { EngineVariant } from '~/types/engine'
 
 interface Props {
   variant?: EngineVariant
