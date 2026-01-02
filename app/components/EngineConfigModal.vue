@@ -5,7 +5,6 @@ import { ENGINE_LAYOUTS } from '~/types/engine'
 const props = defineProps<{
   modelValue: boolean
   initialVariant: EngineVariant
-  // 传入一个函数来获取某类型的初始序列，避免深拷贝逻辑散落在外
   getSequenceData: (variant: EngineVariant) => number[][]
 }>()
 
@@ -18,6 +17,7 @@ const emit = defineEmits<{
 const tempVariant = ref<EngineVariant>('sealevel')
 const tempSequence = ref<number[][]>([])
 const editingStepIndex = ref(0)
+const rocketEngineRef = ref(null) // 用于获取 SVG 组件实例
 
 // 监听弹窗打开，初始化数据
 watch(() => props.modelValue, (isOpen) => {
@@ -34,7 +34,6 @@ watch(tempVariant, (newVal) => {
 })
 
 function loadSequenceForVariant(variant: EngineVariant) {
-  // 深拷贝
   const data = props.getSequenceData(variant)
   tempSequence.value = JSON.parse(JSON.stringify(data))
   editingStepIndex.value = 0
@@ -75,12 +74,46 @@ function handleClose() {
 }
 
 function handleSave() {
-  // 深拷贝传出
   emit('save', {
     variant: tempVariant.value,
     sequence: JSON.parse(JSON.stringify(tempSequence.value)),
   })
   handleClose()
+}
+
+// 导出 SVG 逻辑
+function handleExportSvg() {
+  // 获取组件对应的 DOM 元素
+  const componentInstance = rocketEngineRef.value as any
+  const svgEl = componentInstance?.$el as SVGSVGElement | undefined
+
+  if (!svgEl) {
+    console.error('无法获取 SVG 元素')
+    return
+  }
+
+  // 1. 序列化 SVG DOM
+  const serializer = new XMLSerializer()
+  let source = serializer.serializeToString(svgEl)
+
+  // 2. 添加必要的命名空间 (如果缺失)
+  if (!source.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)) {
+    source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"')
+  }
+  if (!source.match(/^<svg[^>]+xmlns:xlink/)) {
+    source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"')
+  }
+
+  // 3. 创建 Blob 并下载
+  const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  // 文件名格式: rocket-layout-step-X.svg
+  link.download = `rocket-${tempVariant.value}-step-${editingStepIndex.value + 1}.svg`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 </script>
 
@@ -131,12 +164,15 @@ function handleSave() {
               <span class="text-xs font-mono opacity-50 w-4">{{ idx + 1 }}</span>
               <span class="text-sm font-medium">Step {{ idx + 1 }}</span>
             </div>
+
+            <!-- 删除按钮：常驻显示 -->
             <button
               v-if="tempSequence.length > 1"
-              class="text-gray-400 opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
+              class="text-gray-400 p-1 transition-colors hover:text-red-400"
+              title="删除此步骤"
               @click.stop="removeStep(idx)"
             >
-              <div i-carbon-trash-can />
+              <div class="i-carbon-trash-can" />
             </button>
           </div>
         </div>
@@ -148,19 +184,32 @@ function handleSave() {
           <span class="text-gray-200 font-bold">
             配置 Step {{ editingStepIndex + 1 }}
           </span>
-          <span class="text-xs text-teal-400 flex gap-1 items-center">
-            <div i-carbon-touch-1 />
-            点击部分以切换状态
-          </span>
+
+          <div class="flex gap-4 items-center">
+            <span class="text-xs text-teal-400 flex gap-1 items-center">
+              <div i-carbon-touch-1 />
+              点击部分以切换状态
+            </span>
+            <!-- 导出 SVG 按钮 -->
+            <button
+              class="text-xs text-gray-300 px-2 py-1 border border-gray-500 rounded flex gap-1 transition-colors items-center hover:text-white hover:bg-gray-600"
+              title="导出当前布局为 SVG 文件"
+              @click="handleExportSvg"
+            >
+              <div i-carbon-download />
+              导出 SVG
+            </button>
+          </div>
         </div>
 
         <div class="bg-black/20 flex flex-1 items-center justify-center relative overflow-hidden">
           <!-- 背景网格装饰 -->
           <div class="opacity-10 inset-0 absolute" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 20px 20px;" />
 
-          <!-- 可交互的 SVG 组件 -->
+          <!-- 可交互的 SVG 组件 (绑定 ref) -->
           <div class="scale-100 transition-all duration-300">
             <RocketEngine
+              ref="rocketEngineRef"
               :variant="tempVariant"
               :active-ids="editingActiveEngines"
               interactive

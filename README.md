@@ -1,80 +1,108 @@
-<p align="center">
-<img src="https://user-images.githubusercontent.com/11247099/140462375-7b7ac4db-35b7-453c-8a05-13d8d20282c4.png" width="600"/>
-</p>
+# 🚀 Rocket Engine Sequence Simulator
 
-<h2 align="center">
-<a href="https://github.com/antfu/vitesse">Vitesse</a> for Nuxt 4
-</h2><br>
+一个基于 Web 的火箭发动机点火序列可视化与配置模拟器。该项目允许用户直观地设计、配置并播放不同类型火箭发动机（如 Merlin 1D 海平面版与真空版）的点火时序。
 
-<p align="center">
-<br>
-<a href="https://vitesse-nuxt3.netlify.app/">🖥 Online Preview</a>
-<br><br>
-<a href="https://stackblitz.com/github/antfu/vitesse-nuxt"><img src="https://developer.stackblitz.com/img/open_in_stackblitz.svg" alt=""></a>
-</p>
+## ✨ 核心特性
 
-## Features
+- **可视化引擎展示**：
+  - 支持 **猎鹰9号(Stage 1)**：经典的 9 机并联布局。
+  - 支持 **猎鹰9号(Stage 2)**：二级大喷管单发布局。
+  - 动态 SVG 渲染，带流光效果与交互反馈。
 
-- 💚 [Nuxt 4](https://nuxt.com/) - SSR, ESR, File-based routing, components auto importing, modules, etc.
+- **序列配置系统**：
+  - 可视化编辑器：直接点击发动机喷口切换开启/关闭状态。
+  - 步骤管理：支持添加、删除序列步骤。
+  - 自动保存：配置数据通过 `LocalStorage` 持久化存储，刷新不丢失。
+  - **SVG 导出**：支持将当前配置的发动机状态导出为矢量 SVG 文件。
 
-- ⚡️ Vite - Instant HMR.
+- **播放控制**：
+  - 步进式播放点火序列。
+  - 实时重置与状态回溯。
 
-- 🎨 [UnoCSS](https://github.com/unocss/unocss) - The instant on-demand atomic CSS engine.
+- **现代化 UI 设计**：
+  - 全暗色模式 (Dark Mode)，太空主题风格。
+  - 全局背景网格装饰。
+  - 响应式交互动画。
 
-- 😃 Use icons from any icon sets in Pure CSS, powered by [UnoCSS](https://github.com/unocss/unocss).
+## 🛠 技术栈
 
-- 🔥 The `<script setup>` syntax.
+本项目基于 [Vitesse for Nuxt](https://github.com/antfu/vitesse-nuxt) 模板构建，采用前沿的前端技术栈：
 
-- 🍍 [State Management via Pinia](https://github.com/vuejs/pinia), see [./app/composables/user.ts](./app/composables/user.ts).
+- **核心框架**: [Nuxt](https://nuxt.com/) + [Vue 3](https://vuejs.org/)
+- **语言**: [TypeScript](https://www.typescriptlang.org/)
+- **样式方案**: [UnoCSS](https://unocss.dev/) (Atomic CSS engine)
+- **状态/逻辑复用**:
+  - [VueUse](https://vueuse.org/) (LocalStorage, 交互逻辑)
+  - Composition API (Composables)
+- **图标**: Iconify (via UnoCSS preset)
 
-- 📑 [Layout system](./app/layouts).
+## 📦 快速开始
 
-- 📥 APIs auto importing - for Composition API, VueUse and custom composables.
+### 环境要求
 
-- 🏎 Zero-config cloud functions and deploy.
+- Node.js >= 18.0.0
+- pnpm >= 8.0.0 (推荐)
 
-- 🦾 TypeScript, of course.
-
-- 📲 [PWA](https://github.com/vite-pwa/nuxt) with offline support and auto-update behavior.
-
-## Plugins
-
-### Nuxt Modules
-
-- [VueUse](https://github.com/vueuse/vueuse) - collection of useful composition APIs.
-- [ColorMode](https://github.com/nuxt-modules/color-mode) - dark and Light mode with auto detection made easy with Nuxt.
-- [UnoCSS](https://github.com/unocss/unocss) - the instant on-demand atomic CSS engine.
-- [Pinia](https://github.com/vuejs/pinia) - intuitive, type safe, light and flexible Store for Vue.
-- [VitePWA](https://github.com/vite-pwa/nuxt) - zero-config PWA Plugin for Nuxt 4.
-- [DevTools](https://github.com/nuxt/devtools) - unleash Nuxt Developer Experience.
-
-## IDE
-
-We recommend using [VS Code](https://code.visualstudio.com/) with [Volar](https://github.com/johnsoncodehk/volar) to get the best experience (You might want to disable [Vetur](https://vuejs.github.io/vetur/) if you have it).
-
-## Variations
-
-- [vitesse](https://github.com/antfu/vitesse) - Opinionated Vite Starter Template
-- [vitesse-lite](https://github.com/antfu/vitesse-lite) - Lightweight version of Vitesse
-- [vitesse-nuxt-bridge](https://github.com/antfu/vitesse-nuxt-bridge) - Vitesse for Nuxt 2 with Bridge
-- [vitesse-webext](https://github.com/antfu/vitesse-webext) - WebExtension Vite starter template
-
-## Try it now!
-
-### Online
-
-<a href="https://stackblitz.com/github/antfu/vitesse-nuxt"><img src="https://developer.stackblitz.com/img/open_in_stackblitz.svg" alt=""></a>
-
-### GitHub Template
-
-[Create a repo from this template on GitHub](https://github.com/antfu/vitesse-nuxt/generate).
-
-### Clone to local
-
-If you prefer to do it manually with the cleaner git history
+### 安装依赖
 
 ```bash
-npx degit antfu/vitesse-nuxt my-nuxt-app
-cd my-nuxt-app
-pnpm i # If you don't have pnpm installed, run: npm install -g pnpm
+pnpm install
 ```
+
+### 启动开发服务器
+
+```bash
+pnpm dev
+```
+
+服务将在 `http://localhost:3000` 启动。
+
+### 构建生产版本
+
+```bash
+pnpm build
+```
+
+## 📂 目录结构
+
+项目采用了 Nuxt 4 风格的目录结构，主要代码位于 `app/` 目录下：
+
+```bash
+.
+├── app/
+│   ├── components/         # UI 组件
+│   │   ├── RocketEngine.vue    # 核心发动机 SVG 组件
+│   │   └── EngineConfigModal.vue # 配置弹窗组件
+│   ├── composables/        # 组合式函数 (Logic hooks)
+│   │   └── useEngineControl.ts # 核心控制逻辑
+│   ├── constants/          # 常量定义
+│   ├── layouts/            # 页面布局
+│   ├── pages/              # 路由页面
+│   │   └── index.vue           # 主入口
+│   └── types/              # TypeScript 类型定义
+│       └── engine.ts           # 引擎相关类型
+├── nuxt.config.ts          # Nuxt 配置
+├── uno.config.ts           # UnoCSS 配置
+└── package.json
+```
+
+## 🎮 使用指南
+
+1.  **主界面**：
+    - 屏幕中央显示当前选中的发动机布局。
+    - 底部显示当前序列进度（Step X / Y）。
+    - 点击 **"下一步"** 观察引擎点火状态的变化。
+
+2.  **配置模式**：
+    - 点击右上角的 **"配置"** 按钮打开设置面板。
+    - **左侧面板**：
+      - 切换发动机布局（9机布局 / 二级布局）。
+      - 管理序列步骤（添加/删除）。
+    - **右侧视图**：
+      - 点击圆圈（代表发动机）可切换该步骤下的开启/关闭状态。
+      - 点击 **"导出 SVG"** 可下载当前可视化的矢量图。
+    - 点击 **"保存并测试"** 应用更改并返回主界面。
+
+## 📝 License
+
+MIT License © 2026

@@ -47,10 +47,31 @@ const interactiveClass = computed(() =>
     ? 'cursor-pointer hover:stroke-2 hover:stroke-teal-400'
     : 'pointer-events-none',
 )
+
+// SVG 配置：根据不同变体调整视口和中心偏移
+const svgConfig = computed(() => {
+  if (['cz7a', 'cz7a-stage2'].includes(props.variant || '')) {
+    return {
+      viewBox: '0 0 500 500',
+      cx: 250,
+      cy: 250,
+      bgRadius: 230,
+    }
+  }
+  return {
+    viewBox: '0 0 250 250',
+    cx: 125,
+    cy: 125,
+    bgRadius: 110,
+  }
+})
+
+// CZ-7A 助推器角度: 45, 135, 225, 315
+const BOOSTER_ANGLES = [45, 135, 225, 315]
 </script>
 
 <template>
-  <svg width="300" height="300" viewBox="0 0 250 250" xmlns="http://www.w3.org/2000/svg">
+  <svg :width="300" :height="300" :viewBox="svgConfig.viewBox" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <radialGradient id="blurGradientMain" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
         <stop offset="0%" stop-color="#000000" stop-opacity="0.5" />
@@ -64,10 +85,10 @@ const interactiveClass = computed(() =>
       </radialGradient>
     </defs>
 
-    <g transform="translate(125, 125)">
+    <g :transform="`translate(${svgConfig.cx}, ${svgConfig.cy})`">
       <!-- 背景基础 -->
-      <circle r="110" cx="0" cy="0" fill="url(#blurGradientMain)" />
-      <circle r="115" fill="none" stroke="rgba(128,128,128,0.3)" stroke-width="3" />
+      <circle :r="svgConfig.bgRadius" cx="0" cy="0" fill="url(#blurGradientMain)" />
+      <circle v-if="!['cz7a', 'cz7a-stage2'].includes(variant || '')" :r="svgConfig.bgRadius + 5" fill="none" stroke="rgba(128,128,128,0.3)" stroke-width="3" />
 
       <!-- 变体 A: Merlin 1D Sea Level (9发并联) -->
       <g v-if="variant === 'sealevel'" class="transition-colors duration-300">
@@ -96,16 +117,13 @@ const interactiveClass = computed(() =>
       <!-- 变体 B: Merlin 1D Vacuum (单发真空版) -->
       <g v-else-if="variant === 'vacuum'" class="transition-colors duration-300">
         <!-- ID 1: 外部喷管扩展段 (控制渐变) -->
-        <!-- 1. 渐变填充层 (状态激活时显示，未激活时隐藏) -->
         <circle
           r="80" cx="0" cy="0"
           fill="url(#vacuumGradient)"
           class="pointer-events-none transition-opacity duration-300"
           :class="isActive(1) ? 'opacity-100' : 'opacity-0'"
         />
-
-        <!-- 2. 半径86的圈 (交互目标 & 轮廓) -->
-        <!-- 点击此区域切换 ID 1 -->
+        <!-- 交互轮廓 -->
         <circle
           r="86" cx="0" cy="0"
           fill="transparent"
@@ -115,10 +133,7 @@ const interactiveClass = computed(() =>
           :class="interactiveClass"
           @click="handleClick(1)"
         />
-
-        <!-- ID 0: 核心 (控制中心圆) -->
-        <!-- 3. 中心21半径的圆 (核心) -->
-        <!-- 注意：放在最后绘制以处于最上层，确保点击中心优先触发 ID 0 -->
+        <!-- ID 0: 核心 -->
         <circle
           r="21" cx="0" cy="0"
           :fill="getFill(0)"
@@ -126,6 +141,70 @@ const interactiveClass = computed(() =>
           :class="interactiveClass"
           @click="handleClick(0)"
         />
+      </g>
+
+      <!-- 变体 C: CZ-7A Stage 1 (芯一级 + 4助推) -->
+      <g v-else-if="variant === 'cz7a'" class="transition-colors duration-300">
+        <circle r="100" fill="none" stroke="rgba(128,128,128,0.3)" stroke-width="3" />
+        <!-- 芯一级引擎 (ID: 0, 1) -->
+        <circle
+          r="40" cx="-50" cy="0"
+          :fill="getFill(0)"
+          class="transition-all duration-300"
+          :class="interactiveClass"
+          @click="handleClick(0)"
+        />
+        <circle
+          r="40" cx="50" cy="0"
+          :fill="getFill(1)"
+          class="transition-all duration-300"
+          :class="interactiveClass"
+          @click="handleClick(1)"
+        />
+        <!-- 助推器 (ID: 2-5) -->
+        <g v-for="(angle, idx) in BOOSTER_ANGLES" :key="idx" :transform="`rotate(${angle}) translate(0, -160)`">
+          <circle r="60" fill="none" stroke="rgba(128,128,128,0.3)" stroke-width="3" />
+          <circle
+            r="40" cx="0" cy="0"
+            :fill="getFill(idx + 2)"
+            class="transition-all duration-300"
+            :class="interactiveClass"
+            @click="handleClick(idx + 2)"
+          />
+        </g>
+      </g>
+
+      <!-- 变体 D: CZ-7A Stage 2 (二级双发真空版) -->
+      <g v-else-if="variant === 'cz7a-stage2'" class="transition-colors duration-300">
+        <!-- 箭体轮廓 -->
+        <circle r="200" fill="none" stroke="rgba(128,128,128,0.3)" stroke-width="3" />
+
+        <!-- 左引擎 ID: 0, 右引擎 ID: 1 -->
+        <g v-for="(offset, idx) in [-100, 100]" :key="idx">
+          <!-- 渐变喷管 (随状态显示/隐藏) -->
+          <circle
+            :r="80" :cx="offset" cy="0"
+            fill="url(#vacuumGradient)"
+            class="pointer-events-none transition-opacity duration-300"
+            :class="isActive(idx) ? 'opacity-100' : 'opacity-0'"
+          />
+          <!-- 轮廓 & 交互区 -->
+          <circle
+            :r="86" :cx="offset" cy="0"
+            fill="transparent"
+            stroke="rgba(128,128,128,0.3)"
+            stroke-width="3"
+            class="transition-all duration-300"
+            :class="interactiveClass"
+            @click="handleClick(idx)"
+          />
+          <!-- 引擎核心 -->
+          <circle
+            :r="21" :cx="offset" cy="0"
+            :fill="getFill(idx)"
+            class="pointer-events-none transition-all duration-300"
+          />
+        </g>
       </g>
     </g>
   </svg>

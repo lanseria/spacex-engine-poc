@@ -9,8 +9,10 @@ export function useEngineControl() {
   // 存储：使用 key 区分不同引擎的序列
   // 这里设计为由外部可以动态扩展，暂时针对两种硬编码，后续可改为动态对象
   const sequences = reactive({
-    sealevel: useLocalStorage<number[][]>('rocket-seq-sealevel', [[]]),
-    vacuum: useLocalStorage<number[][]>('rocket-seq-vacuum', [[]]),
+    'sealevel': useLocalStorage<number[][]>('rocket-seq-sealevel', [[]]),
+    'vacuum': useLocalStorage<number[][]>('rocket-seq-vacuum', [[]]),
+    'cz7a': useLocalStorage<number[][]>('rocket-seq-cz7a', [[]]),
+    'cz7a-stage2': useLocalStorage<number[][]>('rocket-seq-cz7a-stage2', [[]]),
   })
 
   // 当前播放进度
