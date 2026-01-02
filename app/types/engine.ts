@@ -1,4 +1,4 @@
-export type EngineVariant = 'sealevel' | 'vacuum' | 'cz7a' | 'cz7a-stage2'
+export type EngineVariant = 'falcon9b5-stage1' | 'falcon9b5-stage2' | 'cz7a-stage1' | 'cz7a-stage2'
 
 export interface EngineLayoutDef {
   id: EngineVariant
@@ -7,8 +7,8 @@ export interface EngineLayoutDef {
 }
 
 export const ENGINE_LAYOUTS: EngineLayoutDef[] = [
-  { id: 'sealevel', name: '9机布局 (猎鹰9号Stage 1)' },
-  { id: 'vacuum', name: '1机布局 (猎鹰9号Stage 2)' },
-  { id: 'cz7a', name: 'CZ-7A (芯一级 + 4助推)' },
-  { id: 'cz7a-stage2', name: 'CZ-7A (二级 2机)' },
+  { id: 'falcon9b5-stage1', name: 'Falcon 9 B5 Stage 1 (9机)' },
+  { id: 'falcon9b5-stage2', name: 'Falcon 9 B5 Stage 2 (1机)' },
+  { id: 'cz7a-stage1', name: 'CZ-7A Stage 1 (芯级+助推)' },
+  { id: 'cz7a-stage2', name: 'CZ-7A Stage 2 (2机)' },
 ]

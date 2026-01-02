@@ -4,15 +4,15 @@ export function useEngineControl() {
   // ------------------- 状态数据 -------------------
 
   // 当前选择的引擎类型
-  const currentVariant = ref<EngineVariant>('sealevel')
+  const currentVariant = ref<EngineVariant>('falcon9b5-stage1')
 
   // 存储：使用 key 区分不同引擎的序列
   // 这里设计为由外部可以动态扩展，暂时针对两种硬编码，后续可改为动态对象
   const sequences = reactive({
-    'sealevel': useLocalStorage<number[][]>('rocket-seq-sealevel', [[]]),
-    'vacuum': useLocalStorage<number[][]>('rocket-seq-vacuum', [[]]),
-    'cz7a': useLocalStorage<number[][]>('rocket-seq-cz7a', [[]]),
-    'cz7a-stage2': useLocalStorage<number[][]>('rocket-seq-cz7a-stage2', [[]]),
+    'falcon9b5-stage1': useLocalStorage<number[][]>('rocket-seq-f9-s1', [[]]),
+    'falcon9b5-stage2': useLocalStorage<number[][]>('rocket-seq-f9-s2', [[]]),
+    'cz7a-stage1': useLocalStorage<number[][]>('rocket-seq-cz7a-s1', [[]]),
+    'cz7a-stage2': useLocalStorage<number[][]>('rocket-seq-cz7a-s2', [[]]),
   })
 
   // 当前播放进度

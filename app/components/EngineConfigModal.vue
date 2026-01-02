@@ -14,7 +14,7 @@ const emit = defineEmits<{
 }>()
 
 // 编辑态状态
-const tempVariant = ref<EngineVariant>('sealevel')
+const tempVariant = ref<EngineVariant>('falcon9b5-stage1')
 const tempSequence = ref<number[][]>([])
 const editingStepIndex = ref(0)
 const rocketEngineRef = ref(null) // 用于获取 SVG 组件实例
